@@ -1,0 +1,102 @@
+---
+title: "Assignment: Solve LP Model"
+author: "Sai Prasad Boyapati"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+**To formulate a Linear Programming (LP) problem to solve using R libraries**
+$$ \text{The Max objective function }  \hspace{.5cm} X = 420(P_a+P_b+P_c)+360(Q_a+Q_b+Q_c)+300(R_a+R_b+R_c)$$
+$$ \text{Rearraning Max objective function}  \hspace{.5cm}X = 420P_a + 360Q_a + 300Q_a + 420P_b + 360Q_b + 300Q_b + 420P_c + 360Q_c + 300Q_c $$
+sub to
+$$P_a+Q_a+Q_a\le750$$
+$$P_b+Q_b+R_b\le900$$
+$$P_c+Q_c+R_c\le450 $$
+$$20P_a+15Q_a+12R_a\le13000$$
+$$20P_b+15Q_b+12R_b\le12000$$
+$$20P_c+15Q_c+12R_c\le5000$$
+$$P_a+P_b+P_c\le900$$
+$$Q_a+Q_b+Q_c\le1200$$
+$$R_a+R_b+R_c\le750$$
+$$(P_a+Q_a+Q_a)*(100/750)=(P_b+Q_b+Q_b)*(100/900)=(P_c+Q_c+Q_c)*(100/450)$$
+
+
+Non-neg constraints
+$$P_a, P_b, P_c, Q_a, Q_b, Q_c, Q_a, Q_b, Q_c\ge0 $$
+**A representation of a Linear Programming (LP) problem that can be solved with R libraries.**\\
+$$P_a+Q_a+Q_a+0P_b+0Q_b+0Q_b+0P_c+0Q_c+0Q_c\le750$$
+$$0P_a+0Q_a+0Q_a+P_b+Q_b+Q_b+0P_c+0Q_c+0Q_c\le900$$
+$$0P_a+0Q_a+0Q_a+0P_b+0Q_b+0Q_b+P_c+Q_c+Q_c\le450$$
+  $$20P_a+15Q_a+12Q_a+0P_b+0Q_b+0Q_b+0P_c+0Q_c+0Q_c\le13000$$
+$$0L_1+0M_1+0S_1+20L_2+15M_2+12S_2+0L_3+0M_3+0S_3\le12000$$
+$$0P_a+0Q_a+0Q_a+0P_b+0Q_b+0Q_b+20P_c+15Q_c+12Q_c\le5000$$
+$$P_a+0Q_a+0Q_a+P_b+0Q_b+0Q_b+P_c+0Q_c+0Q_c\le900$$
+ $$0P_a+Q_a+0Q_a+0P_b+Q_b+0Q_b+0P_c+Q_c+0Q_c\le1200$$
+$$0P_a+0Q_a+Q_a+0P_b+0Q_b+Q_b+0P_c+0Q_c+Q_c\le750$$
+ $$900P_a+900Q_a+900Q_a-750P_b-750Q_b-750Q_b+0P_c+0Q_c+0Q_c=0  $$
+$$0P_a+0Q_a+0Q_a+450P_b+450Q_b+450Q_b-900P_c-900Q_c-900Q_c=0  $$
+ $$450P_a+450Q_a+450Q_a+0P_b+0Q_b+0Q_b-750P_c-750Q_c-750Q_c=0  $$
+
+```{r}
+
+library(lpSolve)
+
+#Obj function
+f.obj<-c(420,360,300,420,360,300,420,360,300)
+
+#Restrictions
+f.con<-matrix(c(1, 1, 1, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 1, 1, 1, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 1, 1, 1,
+                20, 15, 12, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 20, 15, 12, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 20, 15, 12,
+                1, 0, 0, 1, 0, 0, 1, 0, 0,
+                0, 1, 0, 0, 1, 0, 0, 1, 0,
+                0, 0, 1, 0, 0, 1, 0, 0, 1,
+                900,900,900,-750,-750,-750,0,0,0,
+                0,0,0,450,450,450,-900,-900,-900,
+                450,450,450,0,0,0,-750,-750,-750),nrow = 12,byrow = TRUE)
+
+#Orientation of inequality constraints
+f.dir<-c("<=","<=","<=","<=","<=","<=","<=","<=","<=","=","=","=")
+#Coefficients on the right-hand side
+f.rhs<-c(750,900,450,13000,12000,5000,900,1200,750,0,0,0)
+
+
+#Maximum value of the objective function (Z)
+lp('max',f.obj, f.con, f.dir, f.rhs)
+
+
+
+
+```
+
+**Interpreting the output from the optimization routines**
+
+The output indicates that the maximum value of the objective function is 696,000. This means that the highest profit achievable by Weigelt Corporation from all its production plants combined is $696,000.
+
+
+**Interpret the o/p from LP solution**
+
+```{r}
+# variable values
+lp('max',f.obj, f.con, f.dir, f.rhs)$solution
+
+```
+The values above are the result of the LP solution. These values indicate the following conclusions.: \
+The number of large units to be produced in plant 1 is approximately 516.67, which can be rounded to 516 units.
+The number of medium units to be produced in plant 1 is approximately 177.78, rounded to 177 units.\
+The number of small units to be produced in plant 1 is 0 units.\
+
+The number of large units to be produced in plant 2 is 0 units\
+The number of medium units to be produced in plant 2 is approximately 666.67, which can be rounded to 666 units.\
+The number of small units to be produced in plant 2 is approximately 166.67, rounded to 166 units.\
+
+The number of large units to be produced in plant 3 is 0 units\
+The number of medium units to be produced in plant 3 is 0 units \
+The number of small units to be produced in plant 3 is approximately 416.67, which can be rounded to 416 units. \
+
+
